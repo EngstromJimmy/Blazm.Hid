@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Blazm.WebHid\Blazm.Hid.csproj" />
+    <ProjectReference Include="..\..\Blazm.Hid\Blazm.Hid.csproj" />
   </ItemGroup>
 
 </Project>
