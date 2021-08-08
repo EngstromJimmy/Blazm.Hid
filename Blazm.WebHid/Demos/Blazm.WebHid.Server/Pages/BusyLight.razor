@@ -1,0 +1,149 @@
+﻿@page "/busylight"
+@using System.Globalization
+@inject HidNavigator navigator;
+
+<button @onclick="ListDevices"> List Devices </button>
+<button @onclick="Connect"> Connect </button>
+
+<br/>
+<br/>
+<h2>Devices</h2>
+@foreach(var d in devices)
+{
+    @d.ProductName @d.Opened <button @onclick="@(async ()=>{myDevice=d; await d.OpenAsync();})">Connect</button> <br/>
+}
+
+@if (myDevice != null)
+{
+    <input type="color" @bind-value="Color">
+    <button @onclick="ChangeColor">Change Color</button>
+    @Color 
+}
+
+@code{
+    private List<HidDeviceFilter> _filters=new();
+    string Color { get; set; } = "#000000";
+    HidDevice myDevice;
+    List<HidDevice> devices=new();
+    List<BusyLightCommand> Commands = new();
+    public async Task ListDevices()
+    {
+        devices=await navigator.GetDevicesAsync();
+    }
+    
+    public async Task Connect()
+    {
+        _filters.Add(new HidDeviceFilter() {vendorId = 10171 }); //Add BusyLight
+
+        var filter = new HidDeviceRequestOptions() { filters = _filters.ToArray() };
+        myDevice=await navigator.RequestDeviceAsync(filter);
+
+        await myDevice.OpenAsync();
+    }
+
+    public async Task SendCommand()
+    {
+        //var buffer = new byte[]{0x11, 0x03, 0, 0, 0x33, 0x05, 0x05, 0x80, 0x12, 0x05, 0x50, 0, 0, 0x0f, 0x05, 0x80, 0x10, 0x02, 0x00, 0x64, 0, 0x32, 0x00, 0xa3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x06, 0x93};
+        var buffer = new byte[64];
+        var index = 0;
+        foreach(var command in Commands)
+        {
+            command.GetCommandBytes().CopyTo(buffer, index);
+            index += 8;
+        }
+
+        //Unused
+        buffer[59] = 0xff;
+        buffer[60] = 0xff;
+        buffer[61] = 0xff;
+
+        var checksum = 0;
+        for (var i = 0; i <= 61; i++) {
+            checksum += buffer[i];
+        }
+        buffer[62] = (byte)((checksum >> 8) & 0xffff);
+        buffer[63] = (byte)(checksum % 256);
+
+        await myDevice.SendReportAsync(0, buffer);
+    }
+
+    async Task ChangeColor()
+    {
+        Commands.Clear();
+
+
+        var hexString = Color.Substring(1);
+        var r = int.Parse(hexString.Substring(0, 2), NumberStyles.AllowHexSpecifier);
+        var g = int.Parse(hexString.Substring(2, 2), NumberStyles.AllowHexSpecifier);
+        var b = int.Parse(hexString.Substring(4, 2), NumberStyles.AllowHexSpecifier);
+
+        BusyLightCommand Step1 = new BusyLightCommand();
+        Step1.Command = 0x10; //Reset Device and jump to step 2
+        Step1.Repeat = 0;
+        Step1.Red = (byte)((Convert.ToDecimal(r)/255)*100);
+        Step1.Green = (byte)((Convert.ToDecimal(g)/255)*100);
+        Step1.Blue = (byte)((Convert.ToDecimal(b)/255)*100);
+        //Step1.OnTime = 10;
+        //Step1.OffTime = 5;
+
+        Commands.Add(Step1);
+
+        await SendCommand();
+    }
+
+    public class BusyLightCommand
+    {
+        /// <summary>
+        /// bitwise interpretation:
+        /// 0b1000xxxx: Keep alive signal = no change. xxxx = timeout in seconds.
+        /// 0b01000000: Start Bootloader command
+        /// 0b00100000: Reset Device command
+        /// 0b00010aaa: Jump to step aaa when the step is executed.
+        /// </summary>
+        
+        public byte Command { get; set; }
+        /// <summary>
+        /// Execute this step for repeat number of times [1..255]
+        /// </summary>
+        public byte Repeat { get; set; }
+        /// <summary>
+        /// RED LED intensity expressed as PWM on time [0..100] 0-100%
+        /// </summary>
+        public byte Red { get; set; }
+        /// <summary>
+        /// GREEN LED intensity expressed as PWM on time [0..100] <=> 0-100%
+        /// </summary>
+        public byte Green { get; set; }
+        /// <summary>
+        /// BLUE LED intensity expressed as PWM on time [0..100] <=> 0-100%
+        /// </summary>
+        public byte Blue { get; set; }
+        /// <summary>
+        /// ON time in 0.1 second steps [0..255] <=> 0-25.5sec
+        /// </summary>
+        public byte OnTime { get; set; }
+        /// <summary>
+        /// OFF time in 0.1 second steps [0..255] <=> 0-25.5sec
+        /// </summary>
+        public byte OffTime { get; set; }
+        
+        /// <summary>
+        ///bitwise interpretation: 0bcbbbbeee
+        /// bbbb is the ringtone/IM alert tone number to be played.
+        /// If bit c = 1 the audio setting is changed.
+        /// if bit c = 0 the audio setting is ignored.
+        /// The volume level is defined by bits eee. Setting eee=000 stops
+        /// playing the ringtone. Setting eee=111 is the highest volume level.
+        /// There might be fewer than 16 ringtones/IM alert tones available.
+        /// Selecting an undefined ringtone is just ignored.
+        /// Ringtones are repeated automatically.
+        /// </summary>
+        public byte Ringtone { get; set; }
+
+        public byte[] GetCommandBytes()
+        {
+            return new byte[] { Command, Repeat, Red, Green, Blue, OnTime, OffTime, Ringtone };
+        }
+    }
+
+}

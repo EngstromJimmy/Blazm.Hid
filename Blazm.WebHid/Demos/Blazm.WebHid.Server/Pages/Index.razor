@@ -1,0 +1,34 @@
+﻿@page "/"
+@inject HidNavigator navigator;
+
+<button @onclick="ListDevices"> List Devices </button>
+<button @onclick="Connect"> Connect </button>
+
+<br/>
+<br/>
+@foreach(var d in devices)
+{
+    @d.ProductName @d.Opened <button @onclick="@(async ()=>{await d.OpenAsync();})">Connect</button> <br/>
+}
+
+@code{
+    private List<HidDeviceFilter> _filters=new();
+
+    HidDevice myDevice;
+    List<HidDevice> devices=new();
+    public async Task ListDevices()
+    {
+        devices=await navigator.GetDevicesAsync();
+    }
+    
+    public async Task Connect()
+    {
+        _filters.Add(new HidDeviceFilter() {vendorId = 10171 }); //Add BusyLight
+
+        var filter = new HidDeviceRequestOptions() { filters = _filters.ToArray() };
+        myDevice=await navigator.RequestDeviceAsync(filter);
+
+        await myDevice.OpenAsync();
+    }
+
+}
