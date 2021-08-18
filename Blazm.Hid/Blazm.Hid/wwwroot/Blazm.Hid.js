@@ -14,9 +14,8 @@ export async function hookUpEvents() {
 export async function requestDevice(filter)
 {
     var objfilter = JSON.parse(filter);
-    console.log(filter);
-
-    objfilter= { "filters": [{ "vendorId": 10171 }] };
+    //{ "filters": [{ "vendorId": 10171 }] }
+    //objfilter= { "filters": [{ "vendorId": 10171 }] };
     var devices = await navigator.hid.requestDevice(objfilter);
     console.log(devices);
     var device = devices[0];
