@@ -61,16 +61,16 @@ namespace Blazm.Hid
             return await module.InvokeAsync<bool>("closeDevice", device.Id);
         }
 
-        public async Task SendReportAsync(HidDevice device, int reportId, byte[] data)
+        public async Task SendReportAsync(HidDevice device, byte reportId, byte[] data)
         {
             var module = await moduleTask.Value;
             await module.InvokeVoidAsync("sendReport", device.Id, reportId, data);
         }
 
-        public async Task SendFeatureReportAsync(HidDevice device, int reportId, byte[] data)
+        public async Task SendFeatureReportAsync(HidDevice device, byte reportId, byte[] data)
         {
             var module = await moduleTask.Value;
-            await module.InvokeVoidAsync("sendFeatureReport", device.Id, data);
+            await module.InvokeVoidAsync("sendFeatureReport", device.Id,reportId, data);
         }
 
 

@@ -22,8 +22,9 @@ namespace Blazm.Hid.Server
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+            //<1. Add HidNavigator>
             services.AddScoped<HidNavigator>();
+            //</1. Add HidNavigator>
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

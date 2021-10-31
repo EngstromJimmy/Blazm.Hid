@@ -1,34 +1,47 @@
 ﻿@page "/"
+@*<2. Inject HidNavigator>*@
 @inject HidNavigator navigator;
+@*</2. Inject HidNavigator>*@
 
+@*<7. Add Buttons>*@
 <button @onclick="ListDevices"> List Devices </button>
 <button @onclick="Connect"> Connect </button>
+@*</7. Add Buttons>*@
 
+@*<8. Add list>*@
 <br/>
 <br/>
 @foreach(var d in devices)
 {
     @d.ProductName @d.Opened <button @onclick="@(async ()=>{await d.OpenAsync();})">Connect</button> <br/>
 }
-
+@*</8. Add list>*@
 @code{
-    private List<HidDeviceFilter> _filters=new();
 
+    //<3. Add filter>
+    private List<HidDeviceFilter> _filters=new();
+    //</3. Add filter>
+
+    //<4. Add device>
     HidDevice myDevice;
     List<HidDevice> devices=new();
+    //</4. Add device>
+
+    //<5. Implement ListDevices>
     public async Task ListDevices()
     {
         devices=await navigator.GetDevicesAsync();
     }
+    //</5. Implement ListDevices>
     
+    //<6. Implement Connect>
     public async Task Connect()
     {
         _filters.Add(new HidDeviceFilter() {vendorId = 10171 }); //Add BusyLight
 
         var filter = new HidDeviceRequestOptions() { filters = _filters.ToArray() };
         myDevice=await navigator.RequestDeviceAsync(filter);
-
-        await myDevice.OpenAsync();
     }
+    //</6. Implement Connect>
 
 }

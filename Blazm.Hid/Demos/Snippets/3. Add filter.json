@@ -1,0 +1,9 @@
+"Name": {
+"prefix": "3. Add filter",
+"body": [
+"",
+"    private List<HidDeviceFilter> _filters=new();",
+"    ",
+],
+"description": "3. Add filter"
+}

@@ -1,0 +1,10 @@
+"Name": {
+"prefix": "4. Add device",
+"body": [
+"",
+"    HidDevice myDevice;",
+"    List<HidDevice> devices=new();",
+"    ",
+],
+"description": "4. Add device"
+}

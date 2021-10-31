@@ -14,8 +14,6 @@ export async function hookUpEvents() {
 export async function requestDevice(filter)
 {
     var objfilter = JSON.parse(filter);
-    //{ "filters": [{ "vendorId": 10171 }] }
-    //objfilter= { "filters": [{ "vendorId": 10171 }] };
     var devices = await navigator.hid.requestDevice(objfilter);
     console.log(devices);
     var device = devices[0];
@@ -75,9 +73,15 @@ export async function sendReport(deviceId,reportId, data) {
 export async function sendFeatureReport(deviceId, reportId, data) {
     var paireddevices = PairedUSBDevices.filter(function (device) {
         return device.vendorId + '-' + device.productId == deviceId;
-    });
-
+    });    
     var device = paireddevices[0]
-    await device.sendFeatureReport(reportId, data);
+    try {
+        await device.sendFeatureReport(reportId, data);
+    }
+    catch (err) {
+        alert(err.name);
+    }
+   
+ 
 }
 

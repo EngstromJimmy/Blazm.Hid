@@ -1,0 +1,146 @@
+﻿@page "/StreamDeck"
+@using Blazm.Hid
+@using System.Text
+@inject HidNavigator navigator;
+
+
+<h3>StreamDeck</h3>
+
+<button @onclick="Connect"> Connect </button>
+@if (myDevice!=null)
+{
+    @*<button @onclick="SetBrightness"> Set Brightness </button> *@
+    <button @onclick="ResetDevice"> Reset </button> 
+    @*<button @onclick="SetButtons"> SetButtons </button> *@
+
+    @foreach(var b in Buttons)
+    {
+        <div style="border:solid 1px black">@b</div>   
+    }
+}
+@code {
+    bool[] Buttons = new bool[15];
+    private List<HidDeviceFilter> _filters = new();
+
+    HidDevice myDevice;
+    List<HidDevice> devices = new();
+    public async Task ListDevices()
+    {
+        devices = await navigator.GetDevicesAsync();
+    }
+
+    public async Task Connect()
+    {
+        _filters.Add(new HidDeviceFilter() { vendorId = 4057 }); //Add BusyLight
+
+        var filter = new HidDeviceRequestOptions() { filters = _filters.ToArray() };
+        myDevice = await navigator.RequestDeviceAsync(filter);
+
+        await myDevice.OpenAsync();
+        myDevice.Notification += Input_Notification;
+    }
+
+    private void Input_Notification(object sender, OnInputReportArgs e)
+    {
+        if (e.ReportId == 0x01)
+        {
+            //StringBuilder hex = new StringBuilder(e.Data.Length * 2);
+            //foreach (byte b in e.Data)
+            //    hex.AppendFormat("{0:x2}", b);
+            
+            //Console.WriteLine(hex);
+            for (int button= 3; button < 18;button++)
+            {
+                if (e.Data[button] == 0x01)
+                {
+                    Console.WriteLine($"Button {button - 2} is pressed");
+                    Buttons[button - 3] = true;
+                }
+                else
+                {
+                    Buttons[button - 3] = false;
+                }
+            }
+            StateHasChanged();
+        }
+    }
+    
+    private static readonly byte[] headerTemplatePage1 = new byte[] {
+        0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x42, 0x4d, 0xf6, 0x3c, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x36, 0x00, 0x00, 0x00, 0x28, 0x00,
+        0x00, 0x00, 0x48, 0x00, 0x00, 0x00, 0x48, 0x00,
+        0x00, 0x00, 0x01, 0x00, 0x18, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0xc0, 0x3c, 0x00, 0x00, 0xc4, 0x0e,
+        0x00, 0x00, 0xc4, 0x0e, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+
+    private static readonly byte[] headerTemplatePage2 = new byte[] {
+         0x01, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+
+    private static readonly byte[] showLogoMsg = new byte[] { 0x0B, 0x63 };
+
+    public async Task ShowLogo()
+    {
+        await myDevice.SendFeatureReportAsync(0x0B, new byte[] { 0x63 });
+    }
+
+
+    public async Task ResetDevice()
+    {
+        var resetCommandBuffer = new byte[]{
+            0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        };
+
+        await myDevice.SendFeatureReportAsync(0x03, resetCommandBuffer);    
+    }
+
+    public async Task SetBrightness()
+    {
+        byte percent = 50;
+        if (percent > 100) throw new ArgumentOutOfRangeException(nameof(percent));
+        //var buffer = new byte[] { 0x55, 0xaa, 0xd1, 0x01, percent, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+        await myDevice.SendFeatureReportAsync(0x03, new byte[]{0x08,percent });    
+    }
+    
+    public async Task SetButtons()
+    {
+        
+        await myDevice.SendFeatureReportAsync(0x02, GeneratePage1(1,new byte[8000]));    
+        await myDevice.SendFeatureReportAsync(0x02, GeneratePage2(1,new byte[8000]));    
+    }
+     private static byte[] GeneratePage1(int keyId, byte[] imgData)
+        {
+            var p1 = new byte[pagePacketSize];
+            Array.Copy(headerTemplatePage1, p1, headerTemplatePage1.Length);
+
+            if (imgData != null)
+                Array.Copy(imgData, 0, p1, headerTemplatePage1.Length, numFirstPagePixels * 3);
+
+            p1[5] = (byte)(keyId + 1);
+            return p1;
+        }
+
+        internal const int pagePacketSize = 8191;
+        internal const int numFirstPagePixels = 2583;
+        internal const int numSecondPagePixels = 2601;
+        private static byte[] GeneratePage2(int keyId, byte[] imgData)
+        {
+            var p2 = new byte[pagePacketSize];
+            Array.Copy(headerTemplatePage2, p2, headerTemplatePage2.Length);
+
+            if (imgData != null)
+                Array.Copy(imgData, numFirstPagePixels * 3, p2, headerTemplatePage2.Length, numSecondPagePixels * 3);
+
+            p2[5] = (byte)(keyId + 1);
+            return p2;
+        }
+}

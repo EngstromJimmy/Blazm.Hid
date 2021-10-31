@@ -7,7 +7,7 @@ namespace Blazm.Hid
 {
 
     [Serializable]
-    public class HidDevice
+    public partial class HidDevice
     {
         private HidNavigator _webHidNavigator;
         public void InitHidDevice(HidNavigator webhidNavigator)
@@ -32,12 +32,12 @@ namespace Blazm.Hid
         }
 
 
-        public async Task SendReportAsync(int reportId, byte[] data)
+        public async Task SendReportAsync(byte reportId, byte[] data)
         {
             await _webHidNavigator.SendReportAsync(this, reportId, data);
         }
 
-        public async Task SendFeatureReportAsync(int reportId, byte[] data)
+        public async Task SendFeatureReportAsync(byte reportId, byte[] data)
         {
             await _webHidNavigator.SendFeatureReportAsync(this, reportId, data);
         }
@@ -46,13 +46,12 @@ namespace Blazm.Hid
         [JSInvokable]
         public void HandleOnInputReport(int reportId,byte[] data)
         {
-            
+            Notification?.Invoke(this, new OnInputReportArgs() { ReportId = reportId, Data = data });
         }
+        public event EventHandler<OnInputReportArgs> Notification;
+        
 
-        //attribute EventHandler oninputreport;
-        //readonly attribute boolean opened;
 
-       
         //Promise<DataView> receiveFeatureReport([EnforceRange] octet reportId);
 
     }

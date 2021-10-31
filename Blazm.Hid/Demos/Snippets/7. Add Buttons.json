@@ -1,0 +1,10 @@
+"Name": {
+"prefix": "7. Add Buttons",
+"body": [
+"",
+"<button @onclick="ListDevices"> List Devices </button>",
+"<button @onclick="Connect"> Connect </button>",
+"",
+],
+"description": "7. Add Buttons"
+}
