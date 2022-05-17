@@ -1,9 +1,0 @@
-"Name": {
-"prefix": "2. Inject HidNavigator",
-"body": [
-"",
-"@inject HidNavigator navigator;",
-"",
-],
-"description": "2. Inject HidNavigator"
-}

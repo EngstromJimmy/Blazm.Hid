@@ -1,9 +1,0 @@
-"Name": {
-"prefix": "1. Add HidNavigator",
-"body": [
-"",
-"            services.AddScoped<HidNavigator>();",
-"            ",
-],
-"description": "1. Add HidNavigator"
-}
