@@ -1,7 +1,7 @@
 # Blazm.Hid
 Blazm.Hid is a library for Blazor that makes it possible to connect to and communicate with HID devices (Human Interaction Device).
-There are many devices that can be connected to a computer, such as a Stream Deck, Kuando Busylight and many more.
-In this demo we will take a look at how to connect to a device and send and receive data.
+There are many devices that can be connected to a computer, such as a Stream Deck, Kuando Busylight, and many more.
+In this demo, we will take a look at how to connect to a device and send and receive data.
 ## Add HidNavigator
 1. Add HidNavigator in startup.cs
     ```csharp
@@ -57,8 +57,8 @@ WebHID has the ability to list devices that you have granted access to. That API
 ## Busylight
 Kuando Busylight is a device that can be used to light up a device if you are, as the name implies, busy.
 We can get the API from Kuando and use it to connect to the device.
-It's a very interesting device because it can have up to 8 command, and a command can run multiple times and even jump to a different command.
-I won't go into details how that work, but I have the source on my GitHub so you can take a look.
+It's a very interesting device because it can have up to 8 commands, and the command can run multiple times and even jump to a different command.
+I won't go into details about how that work, but I have the source on my GitHub so you can take a look.
 1. Show the color
     ```csharp
     string Color { get; set; } = "#000000";
@@ -83,7 +83,7 @@ I won't go into details how that work, but I have the source on my GitHub so you
     }
     ```
 3. Show Change color
-    This method is where the magic happens, we create on command, just turning the light what ever color I have chosen in the colorpicker.
+    This method is where the magic happens, we create on command, just turning the light whatever color I have chosen in the color picker.
     ```csharp
      async Task ChangeColor()
      {
@@ -110,8 +110,8 @@ I won't go into details how that work, but I have the source on my GitHub so you
      }
     ```
 4. Show SendCommand
-    This method is the on that created a command array with checksums and so on and sends it to the device.
-    If we want it to keep being lit up we need to continue sending ir keep alive signals, I haven't implemented thad in this demo.
+    This method is the one that created a command array with checksums and so on and sends it to the device.
+    If we want it to keep being lit up we need to continue sending ir keep-alive signals, I haven't implemented that in this demo.
     ```csharp
     public async Task SendCommand()
     {
@@ -139,7 +139,7 @@ I won't go into details how that work, but I have the source on my GitHub so you
     }
     ```
 5. Show BusyLightCommand
-    The busy light command is just a class with all the different colors, sounds, jumps and so on
+    The busy light command is just a class with all the different colors, sounds, jumps, and so on
     ```csharp
     public class BusyLightCommand
     {
@@ -199,14 +199,14 @@ I won't go into details how that work, but I have the source on my GitHub so you
 
 ## Stream deck
 The stream deck is a device with a bunch of buttons and each button is also a screen.
-It is very customizeable and can control almost anything.
-I use it for controling Visual Studio, Office or when we are streaming.
+It is very customizable and can control almost anything.
+I use it for controlling Visual Studio, Office, or when we are streaming.
 I have even used it during this presentation.
 Imagine that you have a service, a website that can offer your users Stream deck integration.
-As soon as you connect to the streamdeck it changes the view and you can now control the website.
-The only downside is that is takes over control from your software, and they now battle (or listen) to the same buttons.
-So for this to work 100% we need to turn off the elgato software.
-But for this demo I have a couple of buttons that is not mapped that I can use.
+As soon as you connect to the stream deck it changes the view and you can now control the website.
+The only downside is that it takes over control from your software, and they now battle (or listen) to the same buttons.
+So for this to work 100% we need to turn off the Elgato software.
+But for this demo, I have a couple of buttons that are not mapped that I can use.
 1. Show the buttons
     ```csharp 
     bool[] Buttons = new bool[15];  
@@ -252,7 +252,7 @@ We get a list of all buttons so we could press more than one.
 So where could we use this?
 We use StreamYard when we stream, it's an easy way to get the video saved as well as bring in guests and questions.
 StreamYard has a Stream deck profile you can download from their site.
-The limitation of that is that the web browser window need to be selected (since is just sends key strokes to the active window).
-If they would offer a functionality where they connect to my stream deck, I wouldn't need to download the profile beforhand and I wouldn't have to have the window selected.
+The limitation of that is that the web browser window needs to be selected (since it just sends keystrokes to the active window).
+If they would offer the functionality where they connect to my stream deck, I wouldn't need to download the profile beforehand and I wouldn't have to have the window selected.
 ![Streamdeck](streamdeck.png)
 I will continue to evolve this library with more fun examples, if you have any suggestions or want to help out feel free to contact me.
