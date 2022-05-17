@@ -13,7 +13,7 @@
 <br/>
 @foreach(var d in devices)
 {
-    @d.ProductName @d.Opened <button @onclick="@(async ()=>{await d.OpenAsync();})">Connect</button> <br/>
+    @d.ProductName<br/>
 }
 @*</8. Add list>*@
 @code{

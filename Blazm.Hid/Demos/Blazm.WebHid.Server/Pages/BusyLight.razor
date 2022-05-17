@@ -41,6 +41,30 @@
         await myDevice.OpenAsync();
     }
 
+    async Task ChangeColor()
+    {
+        Commands.Clear();
+
+
+        var hexString = Color.Substring(1);
+        var r = int.Parse(hexString.Substring(0, 2), NumberStyles.AllowHexSpecifier);
+        var g = int.Parse(hexString.Substring(2, 2), NumberStyles.AllowHexSpecifier);
+        var b = int.Parse(hexString.Substring(4, 2), NumberStyles.AllowHexSpecifier);
+
+        BusyLightCommand Step1 = new BusyLightCommand();
+        Step1.Command = 0x10; //Reset Device and jump to step 2
+        Step1.Repeat = 0;
+        Step1.Red = (byte)((Convert.ToDecimal(r)/255)*100);
+        Step1.Green = (byte)((Convert.ToDecimal(g)/255)*100);
+        Step1.Blue = (byte)((Convert.ToDecimal(b)/255)*100);
+        //Step1.OnTime = 10;
+        //Step1.OffTime = 5;
+
+        Commands.Add(Step1);
+
+        await SendCommand();
+    }
+
     public async Task SendCommand()
     {
         var buffer = new byte[64];
@@ -66,29 +90,7 @@
         await myDevice.SendReportAsync(0, buffer);
     }
 
-    async Task ChangeColor()
-    {
-        Commands.Clear();
-
-
-        var hexString = Color.Substring(1);
-        var r = int.Parse(hexString.Substring(0, 2), NumberStyles.AllowHexSpecifier);
-        var g = int.Parse(hexString.Substring(2, 2), NumberStyles.AllowHexSpecifier);
-        var b = int.Parse(hexString.Substring(4, 2), NumberStyles.AllowHexSpecifier);
-
-        BusyLightCommand Step1 = new BusyLightCommand();
-        Step1.Command = 0x10; //Reset Device and jump to step 2
-        Step1.Repeat = 0;
-        Step1.Red = (byte)((Convert.ToDecimal(r)/255)*100);
-        Step1.Green = (byte)((Convert.ToDecimal(g)/255)*100);
-        Step1.Blue = (byte)((Convert.ToDecimal(b)/255)*100);
-        //Step1.OnTime = 10;
-        //Step1.OffTime = 5;
-
-        Commands.Add(Step1);
-
-        await SendCommand();
-    }
+    
 
     public class BusyLightCommand
     {

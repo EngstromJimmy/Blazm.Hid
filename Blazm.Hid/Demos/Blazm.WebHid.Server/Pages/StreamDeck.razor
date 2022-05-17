@@ -44,11 +44,6 @@
     {
         if (e.ReportId == 0x01)
         {
-            //StringBuilder hex = new StringBuilder(e.Data.Length * 2);
-            //foreach (byte b in e.Data)
-            //    hex.AppendFormat("{0:x2}", b);
-            
-            //Console.WriteLine(hex);
             for (int button= 3; button < 18;button++)
             {
                 if (e.Data[button] == 0x01)
